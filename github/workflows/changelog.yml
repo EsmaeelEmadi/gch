@@ -1,0 +1,46 @@
+name: Generate Changelog
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for accurate changelog generation
+
+      - name: Install git-cliff
+        run: |
+          curl -sSL https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-x86_64-unknown-linux-gnu.tar.gz | tar -xz
+          sudo mv git-cliff /usr/local/bin/
+
+      - name: Generate CHANGELOG.md
+        run: git cliff -o CHANGELOG.md
+
+      - name: Commit & Push CHANGELOG.md
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add CHANGELOG.md
+          # Only commit if there are changes
+          if ! git diff --quiet; then
+            git commit -m "docs: update changelog"
+            git push origin main
+          else
+            echo "No changelog changes detected."
+          fi
+
+      # Optional: Create a GitHub release using the changelog
+      - name: Create GitHub Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.sha }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
