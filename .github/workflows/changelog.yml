@@ -20,7 +20,7 @@ jobs:
           sudo mv git-cliff-2.8.0 /usr/local/bin/
   
       - name: Generate CHANGELOG.md
-        run: git cliff -o CHANGELOG.md
+        run: git-cliff -o CHANGELOG.md
 
       - name: Commit & Push CHANGELOG.md
         run: |
