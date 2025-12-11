@@ -11,7 +11,7 @@ pub fn create_git_commit(message: &str) -> Result<()> {
     let edited_message = Editor::new()
         .executable(&editor)
         .extension(".commitmsg")
-        .edit(message)
+        .edit(message) // dialoguer uses an editor to get the message
         .expect("Failed to launch commit message editor—check that your EDITOR is configured correctly.")
         .expect("Failed to retrieve edited commit message from the temporary file.");
 
@@ -19,14 +19,15 @@ pub fn create_git_commit(message: &str) -> Result<()> {
     let final_message = clean_commit_message(&edited_message);
 
     // Execute the commit
-    let output = Command::new("git")
-        .args(["commit", "-m", &final_message])
-        .output()
+    let status = Command::new("git")
+        .args(["commit", "-m", &final_message]) // The command that Git will run
+        .status() // <----------------- THIS IS THE KEY!
         .context("Failed to execute git commit")?;
 
-    if !output.status.success() {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        anyhow::bail!("Git commit failed:\n{}", stderr);
+    if !status.success() {
+        // let stderr = String::from_utf8_lossy(&output.stderr);
+        // anyhow::bail!("Git commit failed:\n{}", stderr);
+        anyhow::bail!("Git commit failed. Check the output above for details.");
     }
     Ok(())
 }

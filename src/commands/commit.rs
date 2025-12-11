@@ -54,7 +54,7 @@ pub async fn commit(args: &CommitArgs, config: &config::Config) {
 
     if let Err(e) = git::create_git_commit(&response) {
         spinner.stop_with_message(format!("Erro creating git commit: {}", e));
-        process::exit(1);
+        process::exit(0);
     }
     println!("Commit created successfully");
 }
